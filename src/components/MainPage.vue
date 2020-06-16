@@ -43,6 +43,7 @@
               v-for="company in firstCompanies"
               :key="company"
               class="company-button"
+              v-on:click="selectedCompanies.push(company)"
               ><img
                 :src="getIconOfCompany(company)"
                 alt=""
@@ -51,17 +52,17 @@
               {{ company }}</el-button
             >
             <!-- 显示剩余公司的下拉框列表 -->
-            <el-button round size="medium" v-show="hasMore">
+            <el-button round size="medium" v-show="hasMore" v-on:click="hiddenPopover=!hiddenPopover">
               More <i class="el-icon-arrow-down"></i>
             </el-button>
-            <div class="popover">
+            <div class="popover" v-if="!hiddenPopover">
               <el-input
                 class="search_bar"
                 placeholder="Search Companies"
                 size="small"
               ></el-input>
               <ul>
-                <li v-for="company in lastCompanies" :key="company">
+                <li v-for="company in lastCompanies" :key="company" v-on:click="selectedCompanies.push(company);hiddenPopover=!hiddenPopover">
                   {{ company }}
                 </li>
               </ul>
@@ -79,16 +80,9 @@
 
         <!-- 接下来是显示主内容的表格区 -->
         <el-row>
-          <el-col :span="8" style="margin:0 auto;">
-            <TableOneColumn></TableOneColumn>
-          </el-col>
-
-          <el-col :span="8">
-            <TableOneColumn></TableOneColumn>
-          </el-col>
-
-          <el-col :span="8">
-            <TableOneColumn></TableOneColumn>
+          <el-col :span="8" v-for="companyName in selectedCompanies" :key="companyName">
+            <!-- <p>{{companyLevelInfo[selectedJobType][companyName]}}</p> -->
+            <TableOneColumn v-on:del-company="deleteCompany" v-if="companyLevelInfo[selectedJobType] !== undefined" v-bind:companyDetails="companyLevelInfo[selectedJobType][companyName]" v-bind:companyName="companyName"></TableOneColumn>
           </el-col>
         </el-row>
 
@@ -131,6 +125,7 @@ export default {
   name: 'MainPage',
   data () {
     return {
+      hiddenPopover: true,
       jobOptions: [{
         value: 'Software Engineer',
         label: 'Software Engineer'
@@ -154,7 +149,7 @@ export default {
         label: 'Civil Engineer'
       }],
       selectedJobType: 'Software Engineer', // 界面上选择的工作类型
-      selectedCompany: '', // 选择的需要作对比的公司
+      selectedCompanies: ['Google', 'Facebook', 'Microsoft'], // 选择的需要作对比的公司
       companyLevelInfo: {}, // 公司等级信息
       companyInfomation: {}, // 公司网址，logo等信息
       searchCompanyText: '' // 搜索公司的搜索拦
@@ -191,6 +186,9 @@ export default {
         return info.icon
       }
       return ''
+    },
+    deleteCompany(company) {
+      this.selectedCompanies = this.selectedCompanies.filter(name => name != company)
     }
   },
 
